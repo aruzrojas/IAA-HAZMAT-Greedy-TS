@@ -1,0 +1,42 @@
+Nombre: Alexander Ruz Rojas
+Rol: 201673613-1
+Problema: Recolección de materiales peligrosos
+
+En la carpeta código se encuentra el algoritmo del problema y en la carpeta informe,
+el archivo .tex y el pdf.
+
+Para ejecutar, situarse en la carpeta código y compilar con:
+
+make compile
+
+Luego de esto ejecutar el código con el comando:
+
+./main semilla valor_alfa largo_lista_tabu max_iteraciones nombre_archivo
+
+Donde:
+
+semilla: Valor de la semilla.
+
+valor_alfa: Valor de alfa, que corresponde al peso del objetivo riesgos.
+
+largo_lista_tabu: Corresponde al largo de la lista tabu, en donde se almacenan las
+soluciones ya visitadas.
+
+max_iteraciones: Cantidad máxima de iteraciones del algoritmo Tabu Search.
+
+nombre_archivo: Nombre del archivo (instancia).
+
+Los valores por defecto de estos parámetros son:
+
+semilla = 1
+valor_alfa =0
+largo_lista_tabu =7
+max_its = 100
+nombre_archivo = 'peligro-mezcla4-min-riesgo-zona1-2k-AE.2.hazmat'
+
+Al terminar de ejecutar se genera un archivo llamado output.txt con los resultados,
+en el cual se observa el nombre del archivo, valor de alfa y los resultados de Greedy 
+y Tabu Search con sus respectivos movimientos.
+
+Con el comando make clean, se borra el compilador.
+

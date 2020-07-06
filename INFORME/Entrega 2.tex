@@ -1,0 +1,805 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{multirow}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+    
+    
+\begin{document}
+
+\title{Recolecci\'on de materales peligrosos\\
+{\footnotesize \textsuperscript{*}GitHub: https://github.com/aruzrojas/IAA-HAZMAT-Greedy-TS}
+}
+
+\author{\IEEEauthorblockN{Alexander Ruz Rojas}
+\IEEEauthorblockA{\textit{Departamento de Inform\'atica} \\
+\textit{Universidad T\'ecnica Federico Santa Mar\'ia}\\
+Santiago, Chile \\
+alexander.ruz@sansano.usm.cl}
+
+}
+
+\maketitle
+
+\begin{abstract}
+
+En el presente art\'iculo se presentarar\'a el problema: 'Recolecci\'on de materiales peligrosos', donde se busca que estos materiales sean recogidos y transportados por un conjunto de camiones con un límite de carga cada uno. Dado que los materiales que se transportan est\'an ubicados en lugares distintos y adem\'as tienen un costo de riesgo por ser peligrosos, lo que se busca es minimizar la distancia recorrida por cada camión y además en caso de accidente o situación similar, reducir la población afectada por dicha situación.
+
+\end{abstract}
+
+\begin{IEEEkeywords}
+Recolecci\'on, costo, minimizar, distancia recorrida, poblaci\'on afectada,
+\end{IEEEkeywords}
+
+\section{Introducci\'on}
+
+Muchas empresas requieren o trabajan con carga que desean transportar y contiene materiales que son nocivos, es decir, son perjudiciales para la sociedad y para el medio ambiente, si bien las empresas toman los resguardos necesarios para que el transporte de estos materiales sea lo m\'as seguro posible, siempre existe la posibilidad \cite{b1} de que ocurra un accidente durante el transporte de la carga, lo que provocar\'ia un gran impacto en la poblaci\'on expuesta a riesgos \cite{b2} como: incendio, explosi\'on, fuga qu\'imica o radiaci\'on  de los materiales que estaban siendo transportados. A pesar de que el n\'umero de accidentes es muy bajo en relaci\'on a la cantidad de viajes que se realizan transportando estos materiales. Por esta misma raz\'on, muchos investigadores comenzaron a desarrollar modelos matem\'aticos para poder identificar rutas que le permitan a cada veh\'iculo transportar dichos materiales con el objetivo de que estas rutas sean de bajo riesgo. Para una empresa el costo de transporte en rutas de bajo riesgo resulta elevado, por lo cual este problema se vuelve multi-objetivo en donde se busca minimizar el costo asociado al transporte y reducir la poblaci\'on en riesgo, dando pesos distintos a cada objetivo dependiendo de la situaci\'on. Para darle a\'un m\'as importancia al problema, estudios desde 1980 afirman \cite{b3} que en Estados Unidos la situaci\'on respecto al transporte de estos materiales se esta agravando, desde ese a\~no m\'as de 55.000 sustancias t\'oxicas fueron fabricados y procesados y al menos 250.000 env\'ios de materiales peligrosos se hacen diariamente y se espera que esto se duplique en al menos 10 a\~nos.
+
+El resto del presente art\'iculo, est\'a organizado de la siguiente manera: la secci\'on 2 contempla el estado del arte en donde se detallar\'an las t\'ecnicas que se han utilizado para resolver este problema, la secci\'on 3 se determinar\'a la t\'ecnica que se utiliz\'o para resolver el problema (tanto el algoritmo como sus componentes), en la secci\'on 4 se dan las caracter\'isticas de las instancias utilizadas, como por ejemplo, cantidad de veh\'iculos, cantidad de materiales peligrosos, etc, en la secci\'on 5 se mostrar\'an los resultados obtenidos para las distintas instancias y en la \'ultima secci\'on se dar\'a a conocer la conclusi\'on del art\'iculo.
+
+\section{Estado del Arte}
+Los primeros estudios relacionados a recolecci\'on de materiales peligrosos datan a principios de la d\'ecada del 80 \cite{b4}, en un extensa investigaci\'on hecha por Gary L. Urbanek y Edward J. Barber, quienes desarrollan un criterio con el fin de designar rutas para el transporte de materiales peligrosos basado en la probabilidad de que ocurra un accidente en una ruta cualquiera, al a\~no 1985, en el art\'iculo \cite{b3} designan rutas para cada cami\'on en base a 4 variables, las cuales son: el n\'umero de eventos peligrosos que ha ocurrido en una ruta, probabilidad de que el material provoque un accidente, poblaci\'on en el radio de riesgo y la cantidad de materiales peligrosos por cada tipo. 
+
+Al a\'no 1997 \cite{b5} se utiliz\'o un algoritmo llamado optimizaci\'on por colonia de hormigas que fue dise\~nado por Marco Dorigo en el a\~no 1992, quienes utilizaron este algoritmo fueron Richard F. Hartl y Christine Strauss para resolver el problema de enrutamiento de veh\'iculos. Este problema es muy similar al visto en este art\'iculo, en una breve descripci\'on trata de que una flota de veh\'iculos con capacidades iguales que deben realizar viajes desde una f\'abrica o lugar similar hacia distintos clientes recolectando distintos materiales, teniendo como objetivo solo reducir el costo de los viajes, ya sea el tiempo o el costo ec\'onomico involucrado. El poder resolver el VRP (problema de enrutamiento de veh\'iculos) con el algoritmo optimizaci\'on por colonia de hormigas fue un gran avance ya que los resultados obtenidos eran mucho mejor que utilizar b\'usqueda local y obten\'ian una diferencia de al menos entre 0-10\% respecto a la mejor soluci\'on. 
+
+Para el a\~no 2003 \cite{b6} se revisaron distintos modelos presentados para la resoluci\'on del problema de recolecci\'on de materiales peligrosos, los cuales representaban el valor esperado de la consecuencia de que un cami\'on cargado con materiales peligrosos escoja una ruta.
+
+En el a\~no 2010, los autores Rojee  Pradhananga,  Eiichi  Taniguchia y Tadashi  Yamada del art\'iculo \cite{b1} "Ant colony system based routing and scheduling for hazardous material transportation", su enfoque es bastante similar al art\'iculo "Applying  the  ANT  System  to  theVehicle Routing Problem" \cite{b5}, en donde utilizan el algoritmo basado en un sistema de colonia de hormigas para un problema multi-objetivo, a diferencia de VRP que solo era un problema de un \'unico objetivo. 
+
+El algoritmo basado en un sistema de colonia de hormigas, es llamado asi por el comportamiento de las éstas en busca de su comida, al observarlas siempre están en una especie de hilera siguiendo un camino, esto se debe a que van dejando feromonas, que son sustancias qu\'imicas que simulan una firma para no perder el rastro por el que han pasado. Contextualizando el algoritmo para el problema de recolecci\'on de materiales, que es de tipo VRPTW multi-objetivo, es decir, problema de enrutamiento de veh\'iculos con ventana de tiempo con m\'as de un objetivo. La t\'ecnica que que emplea es construir una soluci\'on utilizando una poblaci\'on de hormigas y sus respectivas feromonas, donde estas \'ultimas simulan el objetivo del problema que es reducir costos (ya sean econ\'omicos o de tiempo, etc.) y la poblaci\'on en riesgo. Cada hormiga realiza lo siguiente:
+
+\begin{itemize}
+\item Colocar la hormiga en el dep\'osito, lugar de partida de los veh\'iculos.
+\item Crear todas las rutas posibles desde el lugar actual (ya sea donde un cliente o nodo dep\'osito).
+\item Seleccionar la ruta con el mayor valor de feromonas, las cuales fueron definidas en el paso anterior.
+\item Actualizar el valor de la feromona de la ruta actual.
+\item Actualizar el lugar en que se encuentra la hormiga (ya sea donde un cliente o nodo dep\'osito).
+\item Repetir desde el segundo paso si es que se pueden atender a mas clientes.
+\item Actualizar la cantidad de veh\'iculos disponibles.
+\item Terminar cuando se haya hecho lo mismo con todas las hormigas de la colonia.
+\end{itemize}
+
+Los pasos anteriores se deben repetir si es que a\'un no se alcanza el criterio de t\'ermino, que puede ser un n\'umero de veces que se realizan estos pasos y cada vez que se terminen, se debe actualizar la soluci\'on general aplicando una b\'usqueda local de inserci\'on a cada soluci\'on generada en los pasos anteiores y se actualiza el valor del rastro de feromona global (de la soluci\'on general). 
+
+Este algoritmo da muy buenos resultados muy cercanos a los \'optimos globales, como se hab\'ia mencionado el sistema de colonia de hormigas en un VRP presentaba soluciones entre un 0-10\% de discrepancia respecto a las soluciones \'optimas globales, para este caso que se trataba de un VRP con ventanas de tiempo multi-objetivo, presentaba soluciones entre un 0-10\% de discrepancia respecto a los \'optimos globales, pero la mayor\'ia de los resultados ten\'ia una diferencia entre 0-7\%. Converg\'ia a buenas soluciones en aproximadamente 1000 iteraciones, para una instancia de 50 clientes y utilizando 6 veh\'iculos. Cabe destacar que en ninguna instancia utilizada se lleg\'o al \'optimo global.
+
+En el a\~no 2016 \cite{b2}  Germ\'an Paredes-Belmar, Andr\'es Bronfman, Vladimir Marianov, Guillermo Latorre-N\'u\~nez, propusieron una soluci\'on para este problema, en donde los camiones pod\'ian llevar distintos materiales siempre y cuando estos fueran compatibles entre s\'i, es decir, no hab\'ia peligro alguno si se llevaban combinaciones de \'estos en un mismo veh\'iculo. Para resolver el problema lo que hac\'ian era modelar el problema en un grafo, donde los nodos representan los clientes que buscan que su material sera recogido y transportado sumado al nodo dep\'osito (punto de partida de los veh\'iculos) y los arcos representan las rutas entre los nodos. Si un veh\'iculo transportaba m\'as de un material peligroso, consideraban solo el que tuviera mayor riesgo sobre la poblaci\'on.
+
+El m\'etodo que consideran es asumir un grafo auxiliar en donde todos los nodos estuvieran conectados entre s\'i, incluyendo al nodo dep\'osito y consideran que cada arco tiene distintos pesos asociados a los distintos materiales, es decir, dependiendo del material que transporte el veh\'iculo, se asocia el peso del arco, por lo tanto existen tantos grafos como tipos de materiales para el problema. Como consideran que minimizan la poblaci\'on en riesgo y el costo, el peso de los arcos ya no solo ser\'ia el que tan expuesta esta la poblaci\'on sino que se le agrega el costo, que corresponder\'ia al costo de viajar de un nodo i (un cliente cualquiera) a un nodo j (cliente cualquiera) utilizando ese arco. De la forma en que en este art\'iculo relacionan ambos par\'ametros es la siguiente: 
+
+           \[Z = \alpha \cdot EP + (1 - \alpha) \cdot C\]
+           
+Donde EP, corresponde a la poblaci\'on expuesta y C al costo, $\alpha \in $ [0,1] y corresponde al peso que se le asigna a la poblaci\'on expuesta, es decir, si se considera m\'as o menos su valor frente al costo. 
+
+Por lo tanto para cada arco se obtiene un peso que relaciona la poblaci\'on expuesta y el costo de viajar de un cliente a otro, o del nodo dep\'osito a un cliente (es importante destacar que en este caso no hay poblaci\'on en riesgo, porque no hay material cargado en el veh\'iculo) o de un cliente al nodo dep\'osito. Hecho lo anterior se resuelve el problema minimizando el valor de Z y cumpliendo restricciones, entre las que se destacan:
+
+\begin{itemize}
+    \item No sobrepasar la capacidad de cada veh\'iculo.
+    \item Cada cliente es atendido por un solo veh\'iculo.
+    \item Evitar materiales incompatibles en el mismo veh\'iculo.
+    \item Evitar hacer ciclos entre los viajes del veh\'iculo.
+\end{itemize}
+
+La m\'etrica que utilizan para decidir que arco agregar a la ruta de cada veh\'iculo es a\~nadir el arco que menos contribuya al valor de Z, ya que se quiere minimizar, una vez resuelta la ruta para un veh\'iculo, se actualizan los viajes ya que en la ruta se pudo haber agregado un arco que no exisitiera en el grafo original y dicho arco se actualiza con los arcos disponibles del grafo original.
+\\
+
+\section{T\'ecnica propuesta}
+
+Antes de detallar la resoluci\'on del problema, se definir\'an algunos par\'ametros y variables:
+\\
+
+\textit{$K$}: Conjunto de veh\'iculos.
+
+\textit{$N$}: Conjunto de clientes incluyendo el nodo dep\'osito.
+
+\textit{$N_c$}: Conjunto de clientes sin el nodo dep\'osito.
+
+\textit{$M$}: Conjunto con los tipos de materiales peligrosos.
+
+\textit{$MC$}: Conjunto de cantidad de materiales peligrosos, donde el i-\'esimo elemento corresponde a la cantidad que gener\'o el cliente $n_i \in N$.
+
+\textit{$T$}: Conjunto del par: (nodo cliente, tipo de material peligroso), donde el nodo cliente genera un tipo de material.
+
+\textit{$A$}: Conjunto de arcos (rutas entre los nodos).
+
+\textit{COM}: Conjunto de pares de materiales peligrosos del tipo (m,r) que son compatibles entre s\'i, es decir, un veh\'iculo puede transportar en la misma carga dichos materiales.
+
+\textit{$D_0$}: Lista de distancia desde el nodo dep\'osito hacia los clientes.
+
+\textit{$D_m$}: Matriz de distancia entre los distintos nodos (clientes), si el veh\'iculo transporta el material $m \in M$.
+
+\textit{$R_m$}: Matriz de riesgo entre los distintos nodos (clientes), si el veh\'iculo transporta el material $m \in M$.
+
+\textit{Q}: Capacidad del veh\'iculo.
+\\
+
+
+
+Para la resoluci\'on de este problema se utilizar\'a el algoritmo Tabu Search, el cual se caracteriza por ser una estrategia de b\'usqueda local, en donde es posible generar distintas soluciones a partir de una, lo que se conoce como vecindario de una soluci\'on. A través del uso de estructuras de memoria es posible aumentar el rendimiento de la b\'usqueda y en dicha estructura, se almacenan los movimientos realizados para llegar a una nueva soluci\'on, para este problema los movimientos que se utilizaron fueron: 
+
+\begin{itemize}
+    \item 2-Intercambio: De dos rutas de veh\'iculos, se intercambian clientes que est\'en inclu\'idos en sus rutas.
+    
+    \item Insert: De la ruta de un cami\'on escoger un cliente, borrarlo de su ruta e insertarlo en la ruta de otro cami\'on.
+\end{itemize}
+
+El objetivo de utilizar la estructura de memoria, conocida como Lista Tab\'u es que los movimientos realizados no se repitan y as\'i la b\'usqueda de nuevas soluciones no se vea afectada. Para generar el espacio de soluciones (vecindario), se necesita una soluci\'on inicial la cual ser\'a generada a partir del algoritmo Greedy, el cual se caracteriza por ser una estrategia de b\'usqueda local en donde en cada paso escoge la opci\'on de \'optimo local, es decir, busca el beneficio del momento, sin importar lo que ocurri\'o o lo que puede ocurrir. Los componentes necesarios de Greedy para la resoluci\'on de este problema son:
+
+\begin{itemize}
+    \item Representaci\'on de la soluci\'on: Matriz $W$ de 4 dimensiones, que almacena el veh\'iculo utilizado, material que carga, y los arcos utilizados, es decir:
+   \\
+   \begin{equation*}
+        w^{km}_{ij} =     
+    \begin{cases}
+      1, \text{ Si el  veh\'iculo $k$} \in \text{$K$ transporta   el} \\  \text{material $m$} \in \text{$M$} \text{   entre los nodos $i$, $j$} \in \text{$N$}
+      \\
+      0, \text{ en otro caso}
+    \end{cases}
+    \end{equation*}
+    \item Funci\'on Miope: Para cada veh\'iculo escoger el nodo que menos contribuye a la funci\'on evaluaci\'on y que los materiales que carga sean compatibles entre si.
+    \item Punto de partida: Todos los veh\'iculos parten del nodo dep\'osito.
+    \item Funci\'on de evaluaci\'on: Minimizar la relaci\'on entre costo y poblaci\'on expuesta mediante la siguiente expresi\'on.
+    
+    \begin{equation}
+            \text{Min } Z = \sum_{k \in K}^N \sum_{m \in M}^N \sum_{i,j \in A}^N a^{mk}_{ij} \cdot w^{mk}_{ij}
+    \end{equation}
+\end{itemize}
+
+Donde $a^{mk}_{ij} = \alpha \cdot EP^m_{ij} + (1 - \alpha) \cdot c_{ij} $
+\\
+
+Con:
+
+$EP^M_{ij}$: Cantidad de poblaci\'on en riesgo expuesta al material $m$ entre los nodos $i, j$.
+
+$c_{ij}$: Costo de transporte desde el nodo $i$ al nodo $j$.
+
+$\alpha \in [0,1]$
+
+Adem\'as de la variable $w^{km}_{ij}$, se definen dos variables m m\'as las cuales son:
+
+\begin{equation*}
+        x^{k}_{ij} =     
+    \begin{cases}
+      1, \text{ Si el  veh\'iculo $k$} \in \text{$K$ viaja desde el nodo}  \\ \text{$i$ al nodo $j$; $i$, $j$} \in \text{$N$}
+      \\
+      0, \text{ en otro caso}
+    \end{cases}
+    \end{equation*}
+
+\begin{equation*}
+        y^{k}_{i} =     
+    \begin{cases}
+      1, \text{ Si el  veh\'iculo $k$} \in \text{$K$ carga el producto del}  \\ \text{ cliente $i$} \in \text{$N_c$}
+      \\
+      0, \text{ en otro caso}
+    \end{cases}
+    \end{equation*}
+    
+
+$C^{k}_{i}$ = Cantidad de material peligroso que lleva el veh\'iculo $k$  $\in K$ antes de visitar al nodo $i \in N$. Si se est\'a en el nodo dep\'osito,  $C^{k}_{i}$ = 0. 
+\\
+
+Para el algoritmo Tabu Search, los componentes necesarios son:
+
+\begin{itemize}
+
+    \item Lista tab\'u: Estructura de memoria que almacena los movimientos realizados de cada soluci\'on encontrada, con el fin de no repetir los movimientos. Se debe definir el tama\~no de la Lista y cada vez que se llene, se debe eliminar el primer movimiento hecho de los que se encuentran en la Lista.
+    
+    \item Funci\'on de evaluaci\'on: Minimizar la relaci\'on entre costo y poblaci\'on expuesta (1).
+    
+\end{itemize}
+
+\textbf{Restriciones del problema}:
+\\
+
+\textbf{Restricci\'on 1}: No se puede superar la capacidad de carga de los veh\'iculos.
+
+    \begin{equation}
+           \sum_{i \in N_c}  y^{k}_{i} \cdot MC_i \leq Q \qquad \forall \textit{k} \in \textit{K}
+    \end{equation}
+
+\textbf{Restricci\'on 2}: Cada cliente que gener\'o un material debe ser atendido por solo un veh\'iculo, es decir, toda la carga se la lleva un solo veh\'iculo.
+
+    \begin{equation}
+           \sum_{k \in K}  y^{k}_{i} = 1 \qquad \forall \textit{i} \in \textit{N}
+    \end{equation}
+
+\textbf{Restricci\'on 3}: El veh\'iculo puede ser o no ser utilizado.
+
+    \begin{equation}
+           \sum_{j \in N_c}  x^{k}_{0j} \leq 1 \hspace{0.3cm}  \forall \textit{k} \in \textit{K} \text{, 0 representa el nodo dep\'osito.}
+    \end{equation}
+
+\textbf{Restricci\'on 4}: Todos los veh\'iculos que entren a un nodo cliente, deben salir de \'este.
+
+    \begin{equation}
+           \sum_{i \in N_c}  x^{k}_{ij} = \sum_{h \in N_c} x^{k}_{jh} \qquad \forall \textit{$k$} \in \textit{$K$}, \forall \textit{j} \in \textit{$N_c$}
+    \end{equation}
+
+
+\textbf{Restricci\'on 5}: Un veh\'iculo con carga de un material tipo r, no puede salir del nodo i (nodo actual) con un riesgo menor a r.
+
+    \begin{equation}
+           \sum_{j \in N}  w^{km}_{ij} \leq 1 -  y^{k}_{i} \hspace{0.3cm} \forall \textit{$k$} \in \textit{$K$}, \forall \textit{i} \in \textit{$N_c$}, 
+           \textit{ m, r} \in \textit{M}, \textit{(i,r)} \in \textit{T}
+    \end{equation}
+
+\textbf{Restricci\'on 6}: Se evita la combinacion de materiales incompatibles en el mismo veh\'iculo.
+
+    \begin{equation}
+             y^{k}_{i} + y^{k}_{j} \leq 1 \hspace{0.2cm} \forall \textit{$k$} \in \textit{$K$}, \forall \textit{i} \in \textit{$N_c$}, 
+           \textit{(i,m), (j,r)} \in \textit{T}, \textit{(m,r)} \in \textit{COM} 
+    \end{equation}
+
+\textbf{Restricci\'on 7}: Se registra el volumen de materiales despu\'es de que el veh\'iculo haya pasado y recolectado los materiales de un nodo cliente y adem\'as se evita que el veh\'iculo quede atrapado en un sub-tour (ciclos del grafo).
+
+    \begin{equation}
+             C^{k}_{j} \geq C^{k}_{i} + MC_{i} - Q \cdot (1 - x^k_{ij}) \hspace{0.3cm} \forall \textit{$k$} \in \textit{$K$}, \textit{i} \in \textit{$N$}, 
+          \textit{$j$} \in \textit{$N_c$}
+    \end{equation}
+    
+\textbf{Naturaleza de las variables}: 
+    \begin{equation}
+            x^k_{ij}, y^k_i, w^{km}_{ij} \in \{0,1\} \qquad
+            \forall \textit{$k$} \in \textit{$K$}
+            \textit{, i,j} \in \textit{$N$}, \textit{$m$} \in \textit{$M$}
+    \end{equation}
+
+Ya teniendo definido los par\'ametros, variables, restricciones y componentes para el algoritmo Greedy, se detallar\'a el c\'omo se utiliza el algoritmo en el siguiente pseudo-c\'odigo:
+
+\begin{algorithm}
+\caption{Algoritmo Greedy}
+\begin{algorithmic}[1]
+\WHILE{(Clientes con carga)}
+    \FOR {\texttt{(k $\in$ $K$)}}
+        \STATE min $\gets$ min(A)
+        \STATE i,j $\gets$ min
+        \IF {(cliente j no descargado)}
+            \IF {(COMP(Materiales k, material j)}
+                \STATE Visitar y descargar cliente j.
+                \STATE Actualizar funci\'on objetivo
+            \ENDIF
+        \ENDIF
+    \ENDFOR
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+El algoritmo anterior lo que realiza es que por cada veh\'iculo recorre todos los nodos (clientes) posibles, siempre verificando las restricciones y sobre todo si es que el material a cargar es compatible con los materiales que ha cargado el veh\'iculo, en caso de que cumpla las restricciones, es posible cargar dicho material en el veh\'iculo hasta que regresa al nodo dep\'osito y se realiza lo mismo con el siguiente veh\'iculo.
+
+Una vez generada la soluci\'on inicial utilizando Greedy, se deben definir los par\'ametros a utilizar del algoritmo Tabu Search para luego utilizarlo, se adjunta un pseudo-c\'odigo a continuaci\'on:
+
+\begin{algorithm}
+\caption{Algoritmo Tabu Search}
+\begin{algorithmic}[1]
+
+\STATE ListaTabu $\gets$ []
+\STATE max\_size $\gets$ Tama\~no m\'aximo lista tab\'u
+\STATE sBest $\gets$ Greedy()
+\STATE sbestCandidate $\gets$ Greedy()
+
+\WHILE{(Criterio de t\'ermino)}
+    \STATE vecindario $\gets$ vecindario(sbestCandidate)
+    \STATE sbestCandidate $\gets$ vecindario.firstElement
+    \FOR {(sCandidate in vecindario)}
+        \IF {(ListaTabu no contiene sCandidate $and$ 
+        eval(sCandidate) $<=$ eval(sbestCandidate)}
+                \STATE sbestCandidate $\gets$ sCandidate
+        \ENDIF
+    \ENDFOR
+    \IF {(eval(sbestCandidate) $<=$ eval(sBest)}
+        \STATE sBest $\gets$ sbestCandidate
+    \ENDIF
+    \STATE ListaTabu.push(Movimiento(sbestCandidate)
+    \IF {(ListaTabu.size $>$ max\_size)}
+        \STATE ListaTabu.remove(first)
+    \ENDIF
+\ENDWHILE
+
+\end{algorithmic}
+\end{algorithm}
+
+El algoritmo anterior, al comienzo inicializa los par\'ametros del problema, la estructura de memoria (ListaTabu), el tama\~no m\'aximo de la ListaTabu y se inicializa la soluci\'on inicial que se almacenar\'a en las variables sBest y sbestCandidate, la primera mencionada se utilizar\'a para guardar el valor de la mejor soluci\'on y la segunda se utilizar\'a para guardar el valor de la mejor soluci\'on del vecindario y este \'ultimo ser\'a generado a partir de sbestCandidate. Del vecindario se escoge la mejor soluci\'on que cumpla con la restricci\'on de que el movimiento para llegar a dicha soluci\'on no se encuentre en la ListaTabu, este valor se almacena en sbestCandidate y si su valor es de mejor calidad que sBest, \'esta \'ultima se actualiza. En la ListaTabu se agrega el movimiento realizado y por cada iteraci\'on se debe verificar si su tama\~no no ha sobrepasado el max\_size, en caso contrario se elimina el primer movimiento hecho de la ListaTabu. Despu\'es de una cantidad de iteraciones, se retorna el valor de sBest. Para una mejor comparaci\'on de los algoritmos, se almacenar\'an los valores de la funci\'on objetivo de los algoritmos:
+
+\begin{itemize}
+    \item Algoritmo Greedy
+    \item Algoritmo Tabu-Search con \'unico movimiento (2-Intercambio).
+    \item Algoritmo Tabu-Search con \'unico movimiento (Insert).
+    \item Algoritmo Tabu-Search con ambos movimientos (2-Intercambio e Insert).
+\end{itemize}
+
+
+
+\section{Escenario experimental}
+
+La ejecuci\'on del algoritmo fue realizada en un computador con un procesador AMD Ryzen 52500U (8 CPUs) 2 GHZ, Memoria Ram 16 GB y Sistema Operativo Windows 10, el algoritmo fue programado en C++. Lo primero que se realiz\'o es leer el archivo para obtener los datos necesarios para la resoluci\'on del problema. Se utilizan estructuras para los nodos y los veh\'iculos, por cada nodo (cliente), se almacenaban los datos de su id, tipo de material que producen y la carga que producen del material. Para el veh\'iculo en su estrucutra se almacena la capacidad actual, el nodo actual en que se encuentra y la ruta que ha hecho. En matrices se va almacenando la distancia entre todos los nodos y el riesgo de transitar entre todos los nodos para cada material. Se define la matriz $W$, que es la representaci\'on de la soluci\'on del problema, la cual se va construyendo utilizando el algoritmo Greedy con la t\'ecnica descrita en Algorithm 1. 
+
+Para el algoritmo Tabu-Search (Algorithm 2), se utiliza como Lista Tab\'u un vector de tama\'no m\'aximo 7 y como criterio de t\'ermino realizar 100 iteraciones. Para la elecci\'on del movimiento (2-Intercambio o Insert) se genera un n\'umero al azar entre 0 y 1 a partir de  una semilla, si dicho n\'umero es menor a 0.5, se usa el movimiento Insert, en caso contrario se utiliza 2-Intercambio. Para una mejor comparaci\'on en la secci\'on resultados se detallar\'an los valores obtenidos utilizando cada movimento por separado y la combinaci\'on de ambos, adem\'as de los resultados utilizando Greedy.
+
+Las instancias que se utilizaron para obtener resultados del algoritmo implementado son las mismas que se utilizaron en el arti\'iculo "Hazardous    materials    collection with multiple-product  loading" \cite{b2}. Todas las instancias tienen 5 tipos de materiales, distinta cantidad de veh\'iculos pero todos con la misma capacidad.  Las caracter\'isticas de estos son las siguientes:
+
+
+
+
+\begin{table}[H]
+
+\caption{Datos de cantidad de materiales por tipo en cada zona.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Instancias}& \# $MC_A$ & \# $MC_B$ & \# $MC_C$ & \# $MC_D$ & \# $MC_E$\\
+ 
+\hline
+Zona 1& 7.640 & 6.680 & 3.040 & 4.260 & 5.720\\
+\hline
+Zona 2& 5.440 & 10.890 & 14.420 & 20.540 & 11.740\\
+\hline
+Zona 3& 8.040 & 2.170 & 4.170 & 4.120 & 1.970\\
+\hline
+Zona 4& 12.440 & 1.840 & 3.560 & 5.940 & 3.390\\
+\hline
+Zona 5& 1.560 & 4.370 & 1.820 & 2.760 & 2.810\\
+\hline
+Zona 6& 5.600 & 3.270 & 6.060 & 2.310 & 3.770 \\
+\hline
+Zona 7& 3.840 & 2.490 & 2.170 & 4.980 & 2.230\\
+\hline
+\end{tabular}
+\label{tab1}
+\end{center}
+\end{table}
+
+
+\begin{table}[H]
+
+\caption{Datos de cantidad de clientes y veh\'iculos disponibles.}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Instancias}& \# clientes$^{\mathrm{a}}$ & \# veh\'iculos disponibles  \\
+ 
+\hline
+Zona 1& 32 & 3 \\
+\hline
+Zona 2& 36 & 3 \\
+\hline
+Zona 3& 15 & 3 \\
+\hline
+Zona 4& 30 & 5 \\
+\hline
+Zona 5& 21 & 2 \\
+\hline
+Zona 6& 22 & 5 \\
+\hline
+Zona 7& 11& 4 \\
+\hline
+\end{tabular}
+\label{tab1}
+\end{center}
+{$^{\mathrm{a}}$No se considera el nodo dep\'osito.}
+\end{table}
+
+\begin{table}[H]
+\caption{Matriz COM: compatibilidad entre los los materiales y tipo dominante.}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Tipo}& $A$ & $B$ & $C$ & $D$ & $E$\\
+ 
+\hline
+$A$& A & - & C & D & -\\
+\hline
+$B$& - & B & C & D & E\\
+\hline
+$C$& C & C & C & - & E\\
+\hline
+$D$& D & D & - & D & E\\
+\hline
+$E$& - & E & E & E & E\\
+\hline
+\end{tabular}
+\label{tab1}
+\end{center}
+\end{table}
+
+Las tablas I y II muestran las caracter\'isticas de cada instancia, donde cada zona representa una instancia, es decir, un archivo distinto. Las caracter\'isticas a destacar son la cantidad de material peligroso de cada tipo, cantidad de clientes y veh\'iculos disponibles de cada instancia, notar que todos los veh\'iculos tienen la misma capacidad que es de 40.000. La instancia tambi\'en considera las distancias desde el nodo dep\'osito hacia todos los otros nodos (clientes) y matrices de distancia entre los nodos y riesgos entre estos mismos, dependiendo del material que se transporta. Cabe destacar que por cada tipo de material existe una matriz de distancia, ya que el veh\'iculo debe tomar rutas distintas dependiendo del material cargado.
+
+La tabla III muestra la compatibilidad entre los tipos de materiales, es decir, cada tipo de material puede ser o no compatible respecto a los otros. En el caso de que un veh\'iculo cargue m\'as de un tipo de material que sean compatibles entre si, se considera un solo riesgo para efectos de la resoluci\'on. 
+
+
+
+
+
+\clearpage
+\begin{table*}[t]
+\section{Resultados obtenidos}
+\caption{Resultados Zona 1}
+\begin{tabular}{|p{0.03\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.05\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|}
+\hline
+\multicolumn{13}{|c|}{\textbf{ZONA 1}} \\ 
+\hline
+
+\multirow{2}{*}{\textbf{$\alpha$}}  & \multicolumn{3}{|c|}{\textbf{Greedy}} & \multicolumn{3}{|c|}{\textbf{2-Int}} & \multicolumn{3}{|c|}{\textbf{Insert}} & \multicolumn{3}{|c|}{\textbf{2-Int + Insert}} \\
+
+\cline{2-13}
+ & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total  \\
+\hline
+
+0 & 640669 & 242720 & 242720 & 640669 & 242720 & 242720 & 627258 & 195031 & 195031 & 588399 & 192931 & 192931  \\
+\hline
+
+0.1 & 656606 & 221273 & 264806 & 647871 & 219634 & 262458 & 647871 & 219633 & 262457 & 647871 & 219631 & 262455  \\
+\hline
+
+0.2 & 656606 & 215889 & 304032 & 647871 & 214250 & 300974 & 647871 & 214249 & 300973 & 647871 & 214248 & 300972  \\
+\hline
+
+0.3 & 656606 & 210504 & 344335 & 647871 & 208865 & 340567 & 647871 & 208864 & 340566 & 647871 & 208862 & 340565  \\
+\hline
+
+0.4 & 656606 & 205120 & 385715 & 647871 & 203481 & 381237 & 644594 & 205531 & 381156 & 644594 & 205531 & 381156  \\
+\hline
+
+0.5 & 635809 & 208605 & 422207 & 628695 & 205345 & 417020 & 602916 & 198123 & 400520 & 598254 & 202125 & 400190  \\
+\hline
+
+0.6 & 635809 & 203221 & 462774 & 623636 & 206086 & 456616 & 602916 & 192739 & 438845 & 602916 & 192739 & 438845  \\
+\hline
+
+0.7 & 621102 & 183481 & 489816 & 608929 & 186346 & 482154 & 588209 & 172999 & 463646 & 583547 & 177001 & 461583  \\
+\hline
+
+0.8 & 626212 & 183418 & 537653 & 617477 & 181779 & 530338 & 616188 & 169940 & 526938 & 616188 & 169940 & 526938  \\
+\hline
+
+0.9 & 626033 & 174029 & 580833 & 617298 & 172390 & 572807 & 617270 & 172532 & 572796 & 616225 & 165444 & 571147  \\
+\hline
+
+1 & 626033 & 168645 & 626033 & 617240 & 175815 & 617240 & 617240 & 175815 & 617240 & 616225 & 160060 & 616225  \\
+\hline
+
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\caption{Resultados Zona 2}
+\centering
+\begin{tabular}{|p{0.03\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.05\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|}
+\hline
+\multicolumn{13}{|c|}{\textbf{ZONA 2}} \\ 
+\hline
+
+\multirow{2}{*}{\textbf{$\alpha$}}  & \multicolumn{3}{|c|}{\textbf{Greedy}} & \multicolumn{3}{|c|}{\textbf{2-Int}} & \multicolumn{3}{|c|}{\textbf{Insert}} & \multicolumn{3}{|c|}{\textbf{2-Int + Insert}} \\
+
+\cline{2-13}
+ & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total  \\
+\hline
+0 & 983578 & 137617 & 137617 & 1,0 \cdot 10^6 & 119387 & 119387 & 965343 & 111701 & 111701 & 965343 & 111701 & 111701  \\
+\hline
+
+0.1 & 1,0 \cdot 10^6 & 141263 & 233959 & 1,1 \cdot 10^6 & 117100 & 214547 & 1,0 \cdot 10^6 & 111846 & 201989 & 896730 & 106601 & 185614  \\
+\hline
+
+0.2 & 968482 & 137367 & 303590 & 964682 & 136351 & 302017 & 888992 & 99218.2 & 257173 & 888992 & 99219.2 & 257174  \\
+\hline
+
+0.3 & 968482 & 132746 & 383467 & 964682 & 131730 & 381616 & 888992 & 94597.3 & 332916 & 889665 & 95060.3 & 333442  \\
+\hline
+
+0.4 & 959117 & 144406 & 470291 & 949937 & 147868 & 468696 & 839291 & 110091 & 401771 & 839291 & 110092 & 401772  \\
+\hline
+
+0.5 & 909115 & 99907.5 & 504511 & 906417 & 99571.5 & 502994 & 875436 & 97533.5 & 486485 & 874911 & 97100.5 & 486006  \\
+\hline
+
+0.6 & 909115 & 95286.6 & 583584 & 906417 & 94950.6 & 581830 & 875436 & 92912.6 & 562427 & 874911 & 92479.6 & 561938  \\
+\hline
+
+0.7 & 909115 & 90665.7 & 663580 & 906417 & 90329.7 & 661591 & 875436 & 88291.7 & 639293 & 874911 & 87858.7 & 638795  \\
+\hline
+
+0.8 & 905047 & 86772.8 & 741392 & 902349 & 86436.8 & 739167 & 852866 & 81983.8 & 698690 & 851800 & 81486.8 & 697737  \\
+\hline
+
+0.9 & 905047 & 82151.9 & 822758 & 902349 & 81815.9 & 820296 & 852866 & 77361.9 & 775316 & 851800 & 76865.9 & 774307  \\
+\hline
+
+1 & 905047 & 77531 & 905047 & 902349 & 77195 & 902349 & 852866 & 72741 & 852866 & 851800 & 72245 & 851800  \\
+\hline
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[t]
+\caption{Resultados Zona 3}
+\centering
+\begin{tabular}{|p{0.03\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.05\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|}
+\hline
+\multicolumn{13}{|c|}{\textbf{ZONA 3}} \\ 
+\hline
+
+\multirow{2}{*}{\textbf{$\alpha$}}  & \multicolumn{3}{|c|}{\textbf{Greedy}} & \multicolumn{3}{|c|}{\textbf{2-Int}} & \multicolumn{3}{|c|}{\textbf{Insert}} & \multicolumn{3}{|c|}{\textbf{2-Int + Insert}} \\
+
+\cline{2-13}
+ & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total  \\
+\hline
+0 & 295254 & 53459 & 53459 & 295254 & 53459 & 53459 & 295254 & 53459 & 53459 & 295254 & 53459 & 53459  \\
+\hline
+
+0.1 & 307573 & 52514.5 & 78020.4 & 307573 & 52514.5 & 78020.4 & 307573 & 52514.5 & 78020.4 & 307573 & 52514.5 & 78020.4  \\
+\hline
+
+0.2 & 307573 & 49154 & 100838 & 307573 & 49154 & 100838 & 307573 & 49154 & 100838 & 307573 & 49154 & 100838  \\
+\hline
+
+0.3 & 376259 & 50087.5 & 147939 & 376259 & 50087.5 & 147939 & 376259 & 50087.5 & 147939 & 376259 & 50087.5 & 147939  \\
+\hline
+
+0.4 & 376259 & 46727 & 178540 & 376259 & 46727 & 178540 & 376259 & 46727 & 178540 & 376259 & 46727 & 178540  \\
+\hline
+
+0.5 & 376259 & 43366.5 & 209813 & 376259 & 43366.5 & 209813 & 376259 & 43366.5 & 209813 & 376259 & 43366.5 & 209813  \\
+\hline
+
+0.6 & 283134 & 38688.2 & 185356 & 283134 & 38688.2 & 185356 & 283134 & 38688.2 & 185356 & 283134 & 38688.2 & 185356  \\
+\hline
+
+0.7 & 283134 & 35352.4 & 208800 & 283134 & 35352.4 & 208800 & 283134 & 35352.4 & 208800 & 283134 & 35352.4 & 208800  \\
+\hline
+
+0.8 & 283134 & 32016.6 & 232911 & 283134 & 32016.6 & 232911 & 283134 & 32016.6 & 232911 & 283134 & 32016.6 & 232911  \\
+\hline
+
+0.9 & 283134 & 28680.8 & 257689 & 283134 & 28680.8 & 257689 & 283134 & 28680.8 & 257689 & 283134 & 28680.8 & 257689  \\
+\hline
+
+1 & 283134 & 25345 & 283134 & 283134 & 25345 & 283134 & 283134 & 25345 & 283134 & 283134 & 25345 & 283134  \\
+\hline
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[t]
+\caption{Resultados Zona 4}
+\centering
+\begin{tabular}{|p{0.03\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.05\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|}
+\hline
+\multicolumn{13}{|c|}{\textbf{ZONA 4}} \\ 
+\hline
+
+\multirow{2}{*}{\textbf{$\alpha$}}  & \multicolumn{3}{|c|}{\textbf{Greedy}} & \multicolumn{3}{|c|}{\textbf{2-Int}} & \multicolumn{3}{|c|}{\textbf{Insert}} & \multicolumn{3}{|c|}{\textbf{2-Int + Insert}} \\
+
+\cline{2-13}
+ & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total  \\
+\hline
+0 & 1,4 \cdot 10^6 & 139369 & 139369 & 1,4 \cdot 10^6 & 136375 & 136375 & 1,3 \cdot 10^6 & 128370 & 128370 & 1,3 \cdot 10^6 & 128370 & 128370  \\
+\hline
+
+0.1 & 1,4 \cdot 10^6 & 131484 & 255452 & 1,2 \cdot 10^6 & 128555 & 240111 & 1,3 \cdot 10^6& 126196 & 239434 & 1,3 \cdot 10^6 & 126966 & 241675  \\
+\hline
+
+0.2 & 1,4 \cdot 10^6 & 125856 & 390188 & 1,2 \cdot 10^6& 122772 & 348126 & 1,2 \cdot 10^6 & 122100 & 335559 & 1,2 \cdot 10^6& 121688 & 334192  \\
+\hline
+
+0.3 & 1,4 \cdot 10^6 & 118985 & 517543 & 1,2 \cdot 10^6& 115901 & 455992 & 1,2 \cdot 10^6& 115229 & 437478 & 1,2 \cdot 10^6& 115165 & 435730  \\
+\hline
+
+0.4 & 1,4 \cdot 10^6& 112113 & 646273 & 1,2 \cdot 10^6 & 109029 & 565233 & 1,2 \cdot 10^6 & 108357 & 540772 & 1,2 \cdot 10^6 & 106825 & 542804  \\
+\hline
+
+0.5 & 1,4 \cdot 10^6 & 105241 & 776378 & 1,2 \cdot 10^6 & 102157 & 675848 & 1,2 \cdot 10^6 & 101833 & 645368 & 1,2 \cdot 10^6& 104855 & 657642  \\
+\hline
+
+0.6 & 1,4 \cdot 10^6 & 98369.2 & 907856 & 1,2 \cdot 10^6 & 95285.2 & 787838 & 1,2 \cdot 10^6 & 94961.2 & 751326 & 1,2 \cdot 10^6 & 97983.2 & 765451  \\
+\hline
+
+0.7 & 1,4 \cdot 10^6 & 88179.4 & 995397 & 1,3 \cdot 10^6 & 85843.4 & 947243 & 1,3 \cdot 10^6 & 99810.4 & 903475 & 1,2 \cdot 10^6& 83517.4 & 883598  \\
+\hline
+
+0.8 & 1,4 \cdot 10^6 & 77939.6 & 1,1 \cdot 10^6 & 1,3 \cdot 10^6 & 81455.6 & 1,0 \cdot 10^6 & 1,2 \cdot 10^6 & 78147.6 & 959399 & 1,1 \cdot 10^6& 77673.6 & 955070  \\
+\hline
+
+0.9 & 1,3 \cdot 10^6 & 73141.8 & 1,1 \cdot 10^6 & 1,2 \cdot 10^6 & 72927.8 & 1,1 \cdot 10^6 & 1,1 \cdot 10^6 & 70782.8 & 1,0 \cdot 10^6 & 1,1 \cdot 10^6 & 70370.8 & 1,0 \cdot 10^6 \\
+\hline
+
+1 & 1,4 \cdot 10^6 & 70998 & 1,4 \cdot 10^6 & 1,3 \cdot 10^6 & 69436 & 1,3 \cdot 10^6 & 1,2 \cdot 10^6 & 78264 & 1,2 \cdot 10^6& 1,1\cdot 10^6 & 76681 & 1,1 \cdot 10^6  \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\caption{Resultados Zona 5}
+\centering
+\begin{tabular}{|p{0.03\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.05\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|}
+\hline
+\multicolumn{13}{|c|}{\textbf{ZONA 5}} \\ 
+\hline
+
+\multirow{2}{*}{\textbf{$\alpha$}}  & \multicolumn{3}{|c|}{\textbf{Greedy}} & \multicolumn{3}{|c|}{\textbf{2-Int}} & \multicolumn{3}{|c|}{\textbf{Insert}} & \multicolumn{3}{|c|}{\textbf{2-Int + Insert}} \\
+
+\cline{2-13}
+& EP & Costo & Total & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total  \\
+\hline
+0 & 612229 & 73258 & 73258 & 612229 & 73258 & 73258 & 612229 & 73258 & 73258 & 612229 & 73258 & 73258  \\
+\hline
+
+0.1 & 613232 & 72560.4 & 126628 & 613232 & 72560.4 & 126628 & 613232 & 72560.4 & 126628 & 613232 & 72560.4 & 126628  \\
+\hline
+
+0.2 & 613232 & 70524.8 & 179066 & 613232 & 70524.8 & 179066 & 613232 & 70524.8 & 179066 & 613232 & 70524.8 & 179066  \\
+\hline
+
+0.3 & 613232 & 68489.2 & 231912 & 613232 & 68489.2 & 231912 & 613232 & 68489.2 & 231912 & 613232 & 68489.2 & 231912  \\
+\hline
+
+0.4 & 613232 & 66453.6 & 285165 & 613232 & 66453.6 & 285165 & 613232 & 66453.6 & 285165 & 613232 & 66453.6 & 285165  \\
+\hline
+
+0.5 & 613232 & 64418 & 338825 & 613232 & 64418 & 338825 & 613232 & 64418 & 338825 & 613232 & 64418 & 338825  \\
+\hline
+
+0.6 & 613232 & 62382.4 & 392892 & 613232 & 62382.4 & 392892 & 613232 & 62382.4 & 392892 & 613232 & 62382.4 & 392892  \\
+\hline
+
+0.7 & 613232 & 60346.8 & 447366 & 613232 & 60346.8 & 447366 & 613232 & 60346.8 & 447366 & 613232 & 60346.8 & 447366  \\
+\hline
+
+0.8 & 613232 & 58311.2 & 502248 & 613232 & 58311.2 & 502248 & 613232 & 58311.2 & 502248 & 613232 & 58311.2 & 502248  \\
+\hline
+
+0.9 & 613232 & 56275.6 & 557536 & 613232 & 56275.6 & 557536 & 613232 & 56275.6 & 557536 & 613232 & 56275.6 & 557536  \\
+\hline
+
+1 & 613232 & 54240 & 613232 & 613232 & 54240 & 613232 & 613232 & 54240 & 613232 & 613232 & 54240 & 613232  \\
+\hline
+\end{tabular}
+\end{table*}
+
+
+
+\begin{table*}[t]
+\caption{Resultados Zona 6}
+\centering
+\begin{tabular}{|p{0.03\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.05\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|}
+\hline
+\multicolumn{13}{|c|}{\textbf{ZONA 6}} \\ 
+\hline
+
+\multirow{2}{*}{\textbf{$\alpha$}}  & \multicolumn{3}{|c|}{\textbf{Greedy}} & \multicolumn{3}{|c|}{\textbf{2-Int}} & \multicolumn{3}{|c|}{\textbf{Insert}} & \multicolumn{3}{|c|}{\textbf{2-Int + Insert}} \\
+
+\cline{2-13}
+& EP & Costo & Total & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total  \\
+\hline
+0 & 553072 & 93187 & 93187 & 553072 & 93187 & 93187 & 546091 & 92999 & 92999 & 561101 & 93142 & 93142  \\
+\hline
+
+0.1 & 553072 & 89832.1 & 136156 & 553072 & 89832.1 & 136156 & 540931 & 89645.1 & 134774 & 547912 & 89833.1 & 135641  \\
+\hline
+
+0.2 & 553072 & 86477.2 & 179796 & 553072 & 86477.2 & 179796 & 540931 & 86290.2 & 177218 & 547912 & 86478.2 & 178765  \\
+\hline
+
+0.3 & 553072 & 83122.3 & 224107 & 553072 & 83122.3 & 224107 & 540931 & 82935.3 & 220334 & 553072 & 83122.3 & 224107  \\
+\hline
+
+0.4 & 535018 & 97438.4 & 272470 & 526857 & 96166.4 & 268443 & 514836 & 93591.4 & 262089 & 492480 & 95680.4 & 254400  \\
+\hline
+
+0.5 & 535018 & 94083.5 & 314551 & 526857 & 92811.5 & 309834 & 514836 & 90236.5 & 302536 & 492480 & 92325.5 & 292403  \\
+\hline
+
+0.6 & 535018 & 90728.6 & 357302 & 526857 & 89456.6 & 351897 & 514836 & 86881.6 & 343654 & 492480 & 88970.6 & 331076  \\
+\hline
+
+0.7 & 438473 & 72084.7 & 328556 & 428039 & 71390.7 & 321044 & 356687 & 70879.7 & 270945 & 355494 & 73165.7 & 270796  \\
+\hline
+
+0.8 & 438473 & 68729.8 & 364524 & 428039 & 68035.8 & 356038 & 356687 & 67524.8 & 298855 & 355494 & 69810.8 & 298357  \\
+\hline
+
+0.9 & 438473 & 65374.9 & 401163 & 428039 & 64680.9 & 391703 & 356687 & 64169.9 & 327435 & 355494 & 66455.9 & 326590  \\
+\hline
+
+1 & 438473 & 62020 & 438473 & 428039 & 61326 & 428039 & 356687 & 60815 & 356687 & 355494 & 63101 & 355494  \\
+\hline
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[t]
+\caption{Resultados Zona 7}
+\centering
+\begin{tabular}{|p{0.03\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.05\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|p{0.06\linewidth}|}
+\hline
+\multicolumn{13}{|c|}{\textbf{ZONA 7}} \\ 
+\hline
+
+\multirow{2}{*}{\textbf{$\alpha$}}  & \multicolumn{3}{|c|}{\textbf{Greedy}} & \multicolumn{3}{|c|}{\textbf{2-Int}} & \multicolumn{3}{|c|}{\textbf{Insert}} & \multicolumn{3}{|c|}{\textbf{2-Int + Insert}} \\
+
+\cline{2-13}
+ & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total & EP & Costo & Total  \\
+\hline
+0 & 199788 & 68050 & 68050 & 199788 & 68050 & 68050 & 199788 & 68050 & 68050 & 199788 & 68050 & 68050  \\
+\hline
+
+0.1 & 235395 & 87343.8 & 102149 & 235395 & 87343.8 & 102149 & 235395 & 87343.8 & 102149 & 235395 & 87343.8 & 102149  \\
+\hline
+
+0.2 & 235395 & 86302.6 & 116121 & 235395 & 86302.6 & 116121 & 235395 & 86302.6 & 116121 & 235395 & 86302.6 & 116121  \\
+\hline
+
+0.3 & 235395 & 85261.4 & 130301 & 235395 & 85261.4 & 130301 & 235395 & 85261.4 & 130301 & 235395 & 85261.4 & 130301  \\
+\hline
+
+0.4 & 235395 & 84220.2 & 144690 & 235395 & 84220.2 & 144690 & 235395 & 84220.2 & 144690 & 235395 & 84220.2 & 144690  \\
+\hline
+
+0.5 & 235395 & 83179 & 159287 & 235395 & 83179 & 159287 & 235395 & 83179 & 159287 & 235395 & 83179 & 159287  \\
+\hline
+
+0.6 & 207805 & 75433.8 & 154857 & 207805 & 75433.8 & 154857 & 207805 & 75433.8 & 154857 & 207805 & 75433.8 & 154857  \\
+\hline
+
+0.7 & 207805 & 74392.6 & 167781 & 207805 & 74392.6 & 167781 & 207805 & 74392.6 & 167781 & 207805 & 74392.6 & 167781  \\
+\hline
+
+0.8 & 207805 & 73351.4 & 180914 & 207805 & 73351.4 & 180914 & 207805 & 73351.4 & 180914 & 207805 & 73351.4 & 180914  \\
+\hline
+
+0.9 & 207805 & 72310.2 & 194256 & 207805 & 72310.2 & 194256 & 207805 & 72310.2 & 194256 & 207805 & 72310.2 & 194256  \\
+\hline
+
+1 & 191883 & 68602 & 191883 & 191883 & 68602 & 191883 & 191883 & 68602 & 191883 & 191883 & 68602 & 191883  \\
+\hline
+
+
+\end{tabular}
+\end{table*}
+
+
+\clearpage
+Cada tabla representa una instancia utilizada, es decir una zona, y por cada una de ellas se especifican los valores de alfa, el algoritmo utilizado, los objetivos (poblaci\'on expuesta y costo) y el total que equivale al valor de la funci\'on objetivo (1). Los algoritmos mostrados en cada tabla son Greedy, Tabu-search con movimiento 2-Intercambio, Tabu-search con movimiento Insert y Tabu search con ambos movimientos.
+\section{Conclusiones}
+
+En comparaci\'on de los resultados de los algoritmos Greedy y Tabu-search, se puede afirmar que en todas las instancias con Tabu search, utilizando cualquier movimiento o la combinaci\'on de estos, el resultado que se obtiene es igual o mejor que lo obtenido usando Greedy, por lo que los movimientos propuestos para el algoritmo Tabu-search resultaron ser positivos.
+
+En cuanto a los movimientos de Tabu-search, se observa que en todas las instancias y considerando todos los valores de $\alpha$, se obtiene mejor calidad de la funci\'on objetivo utilizando solo Insert sobre usar solo 2-Interambio. Comparando los resultados de Insert con la combinaci\'on de los movimientos (2-Intercambio e Insert), en la gran mayor\'ia de las instancias se obtienen el mismo o mejores resultados usando la combinaci\'on de ambos movimientos, con la excepci\'on de la instancia 4 (Tabla VII), en donde por ejemplo con los valores de $\alpha$ igual a 0.1, 0.4, 0.5, 0.6, se obtienen mejores resultados usando solo el movimiento Insert que la combinaci\'on de ambos. Es posible que se deba a que el movimiento 2-Intercambio diversifique hacia espacios de soluciones donde no se pueda encontrar un buen \'optimo, impidiendo intensificar la soluci\'on. Notar tambi\'en que en la instancia 4 (Tabla VII) con el valor de $\alpha$ igual a 0.1, con ambos movimientos por separado se obtiene una mejor soluci\'on que combinando ambos movimientos.
+
+En cuanto a tiempo de ejecuci\'on, no fue considerado ya que en la totalidad de ejecuciones de Greedy, la obtenci\'on del resultado era casi instant\'anea y con Tabu-search, el tiempo de ejecuci\'on era menor a 2 segundos, por lo que no es relevante considerarlo. Una forma de poder obtener mejores resultados es aceptar soluciones infactibles, con el objetivo de diversificar a\'un m\'as el espacio de soluciones, para poder realizar dicha diversificaci\'on, se debe modificar la funci\'on objetivo, penaliz\'andola de tal forma de que dicha soluci\'on infactible no sea parte de las soluciones factibles. Tambi\'en es posible modificar la funci\'on objetivo, tal como lo hacen en \cite{b1}, donde adem\'as de tener un par\'ametro m\'as en la funci\'on objetivo, buscan distintas formas de relacionarlas y de considerar la m\'as \'optima.
+
+
+\begin{thebibliography}{00}
+\bibitem{b1} Rojee Pradhananga, Eiichi Taniguchia, Tadashi Yamada, "Ant colony system based routing and scheduling for hazardous
+material transportation". Department of Urban Management, Kyoto University, Katsura campus C-1, Kyoto 615-8540, Japan, pp. 1-8, 2010.
+
+\bibitem{b2} Germ\'an Paredes-Belmar, Andr\'es Bronfman, Vladimir Marianov, Guillermo Latorre-N\'u\~nez, "Hazardous materials collection with multiple-product loading", Pontificia Universidad Cat\'olica de Chile, Universidad Andres Bello, Chile, pp 1-7, 2016.
+
+\bibitem{b3} K. David Pijawka, Steve Foote, and Andy Soesilo, "Improving Transportation of Hazardous Materials Through Risk Assessment and Routing", WASHINGTON, D. C., EE.UU, pp 1-10, 1985.
+
+\bibitem{b4} Gary L. Urbanek and Edward J. Barber, "Development of criteria to designate routes for transporting hazardous materials", Washington, D.C., EE UU, pp 1-3, 1980.
+
+
+\bibitem{b5} Richard F. Hartl, Christine Strauss, "Applying the ANT System to the Vehicle Routing Problem", University of Vienna, France, pp 1-3 1997.
+
+\bibitem{b6} Erhan Erkut, Armann Ingolfsson "Transport Risk Models for Hazardous Materials: Revisited", University of Alberta, pp 1-3, 2003.
+
+
+
+\bibitem{b7} M. Young, The Technical Writer's Handbook. Mill Valley, CA: University Science, 1989.
+\end{thebibliography}
+\vspace{12pt}
+
+
+\end{document}
